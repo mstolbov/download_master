@@ -17,17 +17,13 @@ class DM
     @options = {
       download_path: "/dev/null",
       stack_size: 1
-    }.merge(optinos)
+    }.merge(options)
   end
 
   def perform
     h = Net::HTTP.new(uri.host, uri.port)
     h.use_ssl = true if uri.scheme.eql?("https")
     resp = h.get("#{uri.path}?#{uri.query}")
-    puts resp.code
-    puts resp.message
+    resp
   end
 end
-
-# FIXME: move to tests
-DM.process "https://www.google.ru/search?q=funbox&newwindow=1&espv=2&biw=1177&bih=682&source=lnms&tbm=isch&sa=X&ei=J0t2VN-gF8mGywPwzYGYAQ&ved=0CAYQ_AUoAQ"
