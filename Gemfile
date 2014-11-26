@@ -1,4 +1,7 @@
 # A sample Gemfile
 source "https://rubygems.org"
 
-gem "minitest", group: :test
+group :test do
+  gem "minitest"
+  gem "webmock"
+end
