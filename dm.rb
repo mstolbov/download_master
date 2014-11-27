@@ -4,6 +4,7 @@ require 'resolv-replace'
 
 class DM
   require './dm/parser'
+  require './dm/downloader'
 
   class InvalidURI < RuntimeError; end
   class InvalidDownloadPath < RuntimeError; end
