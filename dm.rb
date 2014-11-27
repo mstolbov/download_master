@@ -1,11 +1,12 @@
 require 'net/http'
 require 'uri'
-require 'nokogiri'
 
 class DM
+  require './dm/parser'
+
   class BadURI < RuntimeError; end
 
-  attr_reader :base_uri
+  attr_reader :page_uri
 
   class << self
     def process(url, options = {})
@@ -14,39 +15,28 @@ class DM
   end
 
   def initialize(url, options)
-    raise BadURI unless valid_url?(url)
+    raise BadURI unless url =~ URI::regexp
 
-    @base_uri = URI.parse url
+    @page_uri = URI.parse url
     @options = {
+      timeout: 100,
       download_path: "/dev/null",
       stack_size: 1
     }.merge(options)
   end
 
   def perform
-    resp = connection.get("#{base_uri.path}?#{base_uri.query}")
-    # if success
-    images_urls resp.body
+    resp = connection.get("#{page_uri.path}?#{page_uri.query}")
+
+    case resp
+    when Net::HTTPSuccess
+      images_urls resp.body
+    end
   end
 
   def images_urls(page)
-    urls = []
-    n_page = Nokogiri::HTML page
-    n_page.xpath("//img").each do |img|
-      img_src = img.attribute("src")
-      if img_src
-
-        if valid_url?(img_src.value)
-          urls << img_src.value
-        else
-          puts img_src
-          puts URI.join(base_uri, img_src.value)
-          urls << URI.join(base_uri, img_src.value).to_s
-        end
-
-      end
-    end
-    urls
+    parser = Parser.new page_uri, page
+    parser.images_urls
   end
 
   private
@@ -54,12 +44,10 @@ class DM
     def connection
       return @connection if @connection
 
-      @connection = Net::HTTP.new(base_uri.host, base_uri.port)
-      @connection.use_ssl = true if base_uri.scheme.eql?("https")
+      @connection = Net::HTTP.new(page_uri.host, page_uri.port)
+      @connection.use_ssl = true if page_uri.scheme.eql?("https")
+      @connection.continue_timeout = @options[:timeout]
       @connection
     end
 
-    def valid_url?(url)
-      url =~ URI::regexp
-    end
 end
