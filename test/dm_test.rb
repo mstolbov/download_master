@@ -15,10 +15,19 @@ class TestDM < Minitest::Test
     end
   end
 
-  def test_simple
+  def test_get_images_urls
     url = "https://www.test.host/images"
-    page = DM.process(url)
-    assert_equal "200", page.code
+    page = DM.new(url, {})
+    urls = page.images_urls load_fixrute("start_page.html")
+    assert_equal "https://www.test.host/textinputassistant/tia.png", urls.first
+    assert_equal "https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcTo_Hs0UKab5CfbOq4A4iQiZNgHLZeb4_sNfHPJdP599pcW0LvbncejJtYb", urls.last
+    assert_equal 21, urls.count
   end
+
+  #def test_simple
+    #url = "https://www.test.host/images"
+    #page = DM.process(url)
+    #assert_equal "200", page.code
+  #end
 
 end
