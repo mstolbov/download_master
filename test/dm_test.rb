@@ -19,7 +19,7 @@ class DMTest < Minitest::Test
 
     url = "https://www.badtest.host/images"
     assert_raises DM::ConnectionError do
-      page = DM.start(url)
+      DM.start(url)
     end
   end
 

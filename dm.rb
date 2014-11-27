@@ -45,7 +45,8 @@ class DM
   private
 
     def on_success(respond)
-      images_urls respond.body
+      urls = images_urls respond.body
+      Downloader.start urls, @options[:download_path], @options[:timeout]
     end
 
     def on_error(respond)
