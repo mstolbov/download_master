@@ -5,19 +5,36 @@ require './test/test_helper'
 
 class DMTest < Minitest::Test
   def setup
-    stub_start_page
+    stub_start_url_200
   end
 
   #def test_simple
     #url = "https://www.test.host/images"
-    #page = DM.process(url)
+    #page = DM.start(url)
     #assert_equal "200", page.code
   #end
 
-  def test_input_validation_url
-    url = "www/images"
-    assert_raises DM::BadURI do
-      DM.process(url)
+  def test_bad_respond
+    stub_start_url_502
+
+    url = "https://www.badtest.host/images"
+    assert_raises DM::ConnectionError do
+      page = DM.start(url)
+    end
+  end
+
+  def test_invalid_url
+    url = "bad/url"
+    assert_raises DM::InvalidURI do
+      DM.start(url)
+    end
+  end
+
+  def test_invalid_download_path
+    url = "https://www.test.host/images"
+    options = {download_path: "/wrong/path/to/save"}
+    assert_raises DM::InvalidDownloadPath do
+      DM.start(url, options)
     end
   end
 
