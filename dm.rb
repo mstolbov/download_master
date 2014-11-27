@@ -2,6 +2,7 @@ require 'net/http'
 require 'uri'
 
 class DM
+  class BadURI < RuntimeError; end
 
   attr_reader :uri
 
@@ -12,7 +13,8 @@ class DM
   end
 
   def initialize(url, options)
-    #FIXME: Validate url! Should have scheme!
+    raise BadURI unless url =~ URI::regexp
+
     @uri = URI.parse url
     @options = {
       download_path: "/dev/null",
