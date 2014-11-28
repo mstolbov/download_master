@@ -66,8 +66,12 @@ class DM
       logger.info "Success load page #{@page_uri}"
       urls = images_urls respond.body
 
-      downloader = Downloader.new(urls, @options[:download_path], logger, {timeout: @options[:timeout]})
-      downloader.start
+      until urls.empty? do
+        next_load_urls_part = urls.pop(@options[:stack_size])
+
+        downloader = Downloader.new(next_load_urls_part, @options[:download_path], logger, {timeout: @options[:timeout]})
+        downloader.start
+      end
     end
 
     def on_error(respond)

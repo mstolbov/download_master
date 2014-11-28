@@ -8,11 +8,19 @@ class DMTest < Minitest::Test
     stub_start_url_200
   end
 
-  #def test_simple
-    #url = "https://www.test.host/images"
-    #page = DM.start(url)
-    #assert_equal "200", page.code
-  #end
+  def test_success
+    stub_download_files_list_200
+    Dir.mkdir "/tmp/dm"
+
+    url = "https://www.test.host/images"
+    DM.start(url, download_path: "/tmp/dm")
+
+    sleep 1
+    load_files = Dir["/tmp/dm/**/*"]
+    assert !load_files.empty?
+
+    system("rm -rf /tmp/dm")
+  end
 
   def test_bad_respond
     stub_start_url_502
