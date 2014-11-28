@@ -1,0 +1,34 @@
+#!/usr/bin/env ruby
+APP_PATH = File.expand_path('../../dm',  __FILE__)
+require APP_PATH
+
+require 'optparse'
+options = {}
+OptionParser.new do |opts|
+  opts.banner = "Usage: bin/grub URL DIR [options]"
+  opts.banner += "\n    URL - loading url"
+  opts.banner += "\n    DIR - directory to save images"
+  opts.banner += "\nExample: bin/grab \"http://tamrecords.ru/podcasts/\" /tmp"
+
+  opts.on("-t", "--timeout=N", Integer, "Connection timeout") do |v|
+    options[:timeout] = v
+  end
+  opts.on("-l", "--limit=N", Integer, "Limit urls count for one downloader") do |v|
+    options[:urls_limit] = v
+  end
+  opts.on("--log=[file_name]", "Log to file") do |v|
+    options[:log] = v
+  end
+
+  opts.on_tail("-h", "--help", "Show this message") do
+    puts opts
+    exit
+  end
+
+  opts.abort("See help: bin/grub --help") if ARGV.empty?
+end.parse!
+
+options[:download_path] = ARGV[1]
+url = ARGV[0]
+
+DM.start(url, options)

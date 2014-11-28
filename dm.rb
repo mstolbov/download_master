@@ -15,6 +15,7 @@ class DM
 
   class << self
     def start(url, options = {})
+      @@logger = Logger.new(options[:log] || STDOUT)
       new(url, options).perform
 
     rescue InvalidURI, InvalidDownloadPath => e
@@ -25,7 +26,7 @@ class DM
     end
 
     def logger
-      @@logger ||= Logger.new('dm.log')
+      @@logger
     end
   end
 
@@ -33,7 +34,7 @@ class DM
     @options = {
       timeout: 100,
       download_path: Dir.pwd,
-      stack_size: 1
+      urls_limit: 1
     }.merge(options)
 
     raise InvalidDownloadPath unless Dir.exists?(@options[:download_path])
@@ -68,7 +69,7 @@ class DM
       threads = []
 
       until urls.empty? do
-        next_load_urls_part = urls.pop(@options[:stack_size])
+        next_load_urls_part = urls.pop(@options[:urls_limit])
 
         threads << Thread.new(next_load_urls_part) do |load_urls|
           downloader = DM::Downloader.new(load_urls, @options[:download_path], logger, {timeout: @options[:timeout]})
@@ -76,10 +77,12 @@ class DM
         end
       end
       threads.each {|thr| thr.join }
+      logger.info "Done!"
+      puts "Done!"
     end
 
     def on_error(respond)
-      raise ConnectionError.new("FAIL! Get url: #{@page_uri}. Respond #{respond.code} - #{respond.body}")
+      raise ConnectionError.new("FAIL get url: #{@page_uri}. Respond #{respond.code} - #{respond.body}")
     end
 
     def images_urls(page)
@@ -93,6 +96,7 @@ class DM
       @connection = Net::HTTP.new(page_uri.host, page_uri.port)
       @connection.use_ssl = true if page_uri.scheme.eql?("https")
       @connection.continue_timeout = @options[:timeout]
+      logger.info "Fetch #{page_uri}"
       @connection
     end
 

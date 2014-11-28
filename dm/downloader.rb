@@ -19,6 +19,7 @@ class DM::Downloader
       c = Net::HTTP.new(uri.host, uri.port)
       c.use_ssl = true if uri.scheme.eql?("https")
       c.continue_timeout = @request_timeout
+      logger.info "Fetch #{uri}"
       respond = c.request_get("#{uri.path}?#{uri.query}")
 
       case respond
@@ -38,7 +39,7 @@ class DM::Downloader
       filename.gsub!(/[^0-9A-Za-z.\-]/, '_')
       filepath = File.join(@save_path, filename)
 
-      logger.info "Success download #{uri.to_s} to #{filepath}"
+      logger.info "Success download #{uri} to #{filepath}"
 
       File.open filepath, "w" do |f|
         f.puts respond.body
@@ -46,7 +47,7 @@ class DM::Downloader
     end
 
     def on_error(respond)
-      logger.error "FAIL! Load #{uri.to_s}"
+      logger.error "FAIL load #{uri.to_s}"
     end
 
     def logger

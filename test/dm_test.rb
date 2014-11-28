@@ -6,6 +6,7 @@ require './test/test_helper'
 class DMTest < Minitest::Test
   def setup
     stub_start_url_200
+    @default_options = {log: "dm_test.log"}
   end
 
   def test_success
@@ -13,7 +14,7 @@ class DMTest < Minitest::Test
     Dir.mkdir "/tmp/dm"
 
     url = "https://www.test.host/images"
-    DM.start(url, download_path: "/tmp/dm")
+    DM.start(url, @default_options.merge(download_path: "/tmp/dm"))
 
     sleep 1
     load_files = Dir["/tmp/dm/**/*"]
@@ -27,20 +28,20 @@ class DMTest < Minitest::Test
 
     url = "https://www.badtest.host/images"
     assert_raises DM::ConnectionError do
-      DM.start(url)
+      DM.start(url, @default_options)
     end
   end
 
   def test_invalid_url
     url = "bad/url"
     assert_raises DM::InvalidURI do
-      DM.start(url)
+      DM.start(url, @default_options)
     end
   end
 
   def test_invalid_download_path
     url = "https://www.test.host/images"
-    options = {download_path: "/wrong/path/to/save"}
+    options = @default_options.merge(download_path: "/wrong/path/to/save")
     assert_raises DM::InvalidDownloadPath do
       DM.start(url, options)
     end
