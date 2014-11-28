@@ -65,13 +65,17 @@ class DM
     def on_success(respond)
       logger.info "Success load page #{@page_uri}"
       urls = images_urls respond.body
+      threads = []
 
       until urls.empty? do
         next_load_urls_part = urls.pop(@options[:stack_size])
 
-        downloader = Downloader.new(next_load_urls_part, @options[:download_path], logger, {timeout: @options[:timeout]})
-        downloader.start
+        threads << Thread.new(next_load_urls_part) do |load_urls|
+          downloader = DM::Downloader.new(load_urls, @options[:download_path], logger, {timeout: @options[:timeout]})
+          downloader.start
+        end
       end
+      threads.each {|thr| thr.join }
     end
 
     def on_error(respond)
