@@ -22,3 +22,104 @@ Example: bin/grab "http://tamrecords.ru/podcasts/" /tmp
 
 How to run test:
 `$ ruby -Ilib:test test/dm_test.rb`
+
+Benchmarks:
+
+Running with using threads:
+```
+$ ruby -Ilib:test test/dm_benchmark.rb
+Run options: --seed 42083
+
+# Running:
+
+bench_successDone!
+	 1.390638Done!
+	 1.401353Done!
+	 0.979945Done!
+	 1.190786Done!
+	 1.025677
+F
+
+Finished in 6.028606s, 0.1659 runs/s, 0.1659 assertions/s.
+
+  1) Failure:
+DMBenchmark#bench_success [test/dm_benchmark.rb:18]:
+Expected 0.25658956412875356 to be >= 0.99.
+
+1 runs, 1 assertions, 1 failures, 0 errors, 0 skips
+```
+
+```
+$ time bin/grab "http://tamrecords.ru/podcasts/" /tmp/img
+Done!
+
+real	0m1.368s
+user	0m0.324s
+sys	0m0.092s
+```
+
+Running without using threads: (for do this, I change code. See diff
+below)
+```
+$ ruby -Ilib:test test/dm_benchmark.rb
+Run options: --seed 52687
+
+# Running:
+
+bench_successDone!
+	 7.805880Done!
+	 8.501289Done!
+	 9.206738Done!
+	 9.097851Done!
+	 8.704977
+F
+
+Finished in 43.356226s, 0.0231 runs/s, 0.0231 assertions/s.
+
+  1) Failure:
+DMBenchmark#bench_success [test/dm_benchmark.rb:18]:
+Expected 0.00855938733443573 to be >= 0.99.
+
+1 runs, 1 assertions, 1 failures, 0 errors, 0 skips
+```
+
+
+```
+$ time bin/grab "http://tamrecords.ru/podcasts/" /tmp/img
+Done!
+
+real	0m8.471s
+user	0m0.320s
+sys	0m0.092s
+```
+
+How to run without threads:
+```
+diff --git a/dm.rb b/dm.rb
+index 6712b8c..5a35aea 100644
+--- a/dm.rb
++++ b/dm.rb
+@@ -66,17 +66,17 @@ class DM
+     def on_success(respond)
+       logger.info "Success load page #{@page_uri}"
+       urls = images_urls respond.body
+-      threads = []
++      #threads = []
+
+       until urls.empty? do
+         next_load_urls_part = urls.pop(@options[:urls_limit])
+
+-        threads << Thread.new(next_load_urls_part) do |load_urls|
+-          downloader = DM::Downloader.new(load_urls, @options[:download_path], logger, {timeout: @options[:timeout]})
++        #threads << Thread.new(next_load_urls_part) do |load_urls|
++          downloader = DM::Downloader.new(next_load_urls_part, @options[:download_path], logger, {timeout: @options[:timeout]})
+           downloader.start
+-        end
++        #end
+       end
+-      threads.each {|thr| thr.join }
++      #threads.each {|thr| thr.join }
+       logger.info "Done!"
+       puts "Done!"
+     end
+```
