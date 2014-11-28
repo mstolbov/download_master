@@ -3,8 +3,10 @@ DownloadMaster
 Console multry treads downloader
 
 To use run follow commands in console
-    `$ git clone git@github.com:mstolbov/download_master.git`
-    `$ bundle install`
+```
+    $ git clone git@github.com:mstolbov/download_master.git
+    $ bundle install
+```
 
 ```
 Usage: bin/grub URL DIR [options]
