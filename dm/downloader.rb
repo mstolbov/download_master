@@ -4,7 +4,7 @@ require 'resolv-replace'
 
 class DM::Downloader
 
-  def initialize(urls, path, logger, options)
+  def initialize(urls, path, logger, options = {})
     @urls = urls
     @save_path = path
     @request_timeout = options[:timeout] || 100
@@ -12,7 +12,7 @@ class DM::Downloader
     @logger = logger
   end
 
-  def start(urls, path, timeout = 100)
+  def start
     @urls.each do |url|
       uri = URI(url)
 
@@ -36,14 +36,21 @@ class DM::Downloader
     def on_success(respond, uri)
       filename = File.basename uri.path
       filename.gsub!(/[^0-9A-Za-z.\-]/, '_')
-      File.open File.join(@save_path, filename), "w" do |f|
+      filepath = File.join(@save_path, filename)
+
+      logger.info "Success download #{uri.to_s} to #{filepath}"
+
+      File.open filepath, "w" do |f|
         f.puts respond.body
       end
     end
 
     def on_error(respond)
-      #log fail
+      logger.error "FAIL! Load #{uri.to_s}"
     end
 
+    def logger
+      @logger
+    end
 
 end

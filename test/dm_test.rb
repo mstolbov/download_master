@@ -59,4 +59,23 @@ class DMTest < Minitest::Test
     end
   end
 
+  describe "DM::Downloader" do
+    def setup
+      @urls = ["http://www.test.host/image.png"]
+      @path = "/tmp"
+      @logger = Logger.new(STDOUT)
+
+      stub_download_file_200
+    end
+
+    def test_download_file
+      downloader = DM::Downloader.new @urls, @path, @logger
+      downloader.start
+
+      assert File.exists?("/tmp/image.png")
+
+      File.delete("/tmp/image.png")
+    end
+  end
+
 end

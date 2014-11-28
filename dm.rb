@@ -63,7 +63,7 @@ class DM
   private
 
     def on_success(respond)
-      logger.info "Load url #{@page_uri}"
+      logger.info "Success load page #{@page_uri}"
       urls = images_urls respond.body
 
       downloader = Downloader.new(urls, @options[:download_path], logger, {timeout: @options[:timeout]})
