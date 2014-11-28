@@ -2,12 +2,13 @@ DownloadMaster
 ===============
 Console multry treads downloader
 
-To use run follow commands in console
+To use run follow commands in console:
 ```
     $ git clone git@github.com:mstolbov/download_master.git
     $ bundle install
 ```
 
+How to use:
 ```
 Usage: bin/grub URL DIR [options]
     URL - loading url
@@ -18,3 +19,6 @@ Example: bin/grab "http://tamrecords.ru/podcasts/" /tmp
         --log=[file_name]            Log to file
     -h, --help                       Show this message
 ```
+
+How to run test:
+`$ ruby -Ilib:test test/dm_test.rb`
