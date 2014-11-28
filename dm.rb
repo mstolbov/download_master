@@ -1,6 +1,7 @@
 require 'uri'
 require 'net/http'
 require 'resolv-replace'
+require 'logger'
 
 class DM
   require './dm/parser'
@@ -15,6 +16,16 @@ class DM
   class << self
     def start(url, options = {})
       new(url, options).perform
+
+    rescue InvalidURI, InvalidDownloadPath => e
+      logger.error e.message
+      logger.error e.backtrace.join("\n")
+
+      raise e
+    end
+
+    def logger
+      @@logger ||= Logger.new('dm.log')
     end
   end
 
@@ -29,6 +40,7 @@ class DM
     raise InvalidURI unless url =~ URI::regexp
 
     @page_uri = URI.parse url
+
   end
 
   def perform
@@ -40,17 +52,26 @@ class DM
     else
       on_error respond
     end
+
+  rescue ConnectionError => e
+    logger.error e.message
+    logger.error e.backtrace.join("\n")
+
+    raise e
   end
 
   private
 
     def on_success(respond)
+      logger.info "Load url #{@page_uri}"
       urls = images_urls respond.body
-      Downloader.start urls, @options[:download_path], @options[:timeout]
+
+      downloader = Downloader.new(urls, @options[:download_path], logger, {timeout: @options[:timeout]})
+      downloader.start
     end
 
     def on_error(respond)
-      raise ConnectionError.new("Try get url: #{@page_uri}. Respond #{respond.code} - #{respond.body}")
+      raise ConnectionError.new("FAIL! Get url: #{@page_uri}. Respond #{respond.code} - #{respond.body}")
     end
 
     def images_urls(page)
@@ -65,6 +86,10 @@ class DM
       @connection.use_ssl = true if page_uri.scheme.eql?("https")
       @connection.continue_timeout = @options[:timeout]
       @connection
+    end
+
+    def logger
+      self.class.logger
     end
 
 end
