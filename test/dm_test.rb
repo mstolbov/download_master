@@ -5,6 +5,8 @@ require './test/test_helper'
 
 class DMTest < Minitest::Test
   def setup
+    system("rm -rf /tmp/dm") if Dir.exists? "/tmp/dm"
+
     stub_start_url_200
     @default_options = {log: "dm_test.log"}
   end

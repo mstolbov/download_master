@@ -92,34 +92,3 @@ real	0m8.471s
 user	0m0.320s
 sys	0m0.092s
 ```
-
-How to run without threads:
-```
-diff --git a/dm.rb b/dm.rb
-index 6712b8c..5a35aea 100644
---- a/dm.rb
-+++ b/dm.rb
-@@ -66,17 +66,17 @@ class DM
-     def on_success(respond)
-       logger.info "Success load page #{@page_uri}"
-       urls = images_urls respond.body
--      threads = []
-+      #threads = []
-
-       until urls.empty? do
-         next_load_urls_part = urls.pop(@options[:urls_limit])
-
--        threads << Thread.new(next_load_urls_part) do |load_urls|
--          downloader = DM::Downloader.new(load_urls, @options[:download_path], logger, {timeout: @options[:timeout]})
-+        #threads << Thread.new(next_load_urls_part) do |load_urls|
-+          downloader = DM::Downloader.new(next_load_urls_part, @options[:download_path], logger, {timeout: @options[:timeout]})
-           downloader.start
--        end
-+        #end
-       end
--      threads.each {|thr| thr.join }
-+      #threads.each {|thr| thr.join }
-       logger.info "Done!"
-       puts "Done!"
-     end
-```
